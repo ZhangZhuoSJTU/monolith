@@ -120,15 +120,19 @@ pub fn parse_data_url(url: &Url) -> (String, String, Vec<u8>) {
     // Parse meta data
     let (media_type, charset, is_base64) = parse_content_type(&content_type);
 
+    let blob = decode_data_url_payload(&data, is_base64);
+
+    (media_type, charset, blob)
+}
+
+fn decode_data_url_payload(data: &str, is_base64: bool) -> Vec<u8> {
     // Parse raw data into vector of bytes
-    let text: String = percent_decode_str(&data).decode_utf8_lossy().to_string();
-    let blob: Vec<u8> = if is_base64 {
+    let text: String = percent_decode_str(data).decode_utf8_lossy().to_string();
+    if is_base64 {
         BASE64_STANDARD.decode(&text).unwrap_or_default()
     } else {
         text.as_bytes().to_vec()
-    };
-
-    (media_type, charset, blob)
+    }
 }
 
 pub fn get_referer_url(url: Url) -> Url {
