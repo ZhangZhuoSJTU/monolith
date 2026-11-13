@@ -34,13 +34,17 @@ impl Session {
             );
         }
         let client = Client::builder()
-            .timeout(Duration::from_secs(if options.timeout > 0 {
-                options.timeout
-            } else {
-                // We have to specify something that eventually makes the program fail
-                // (prevent it from hanging forever)
-                600 // 10 minutes in seconds
-            }))
+            .timeout(Duration::from_millis(
+                if options.timeout > 0 {
+                    options.timeout
+                } else {
+                    // We have to specify something that eventually makes the program fail
+                    // (prevent it from hanging forever)
+                    600 // 10 minutes
+                }
+                .checked_mul(1000)
+                .expect("network timeout out of range"),
+            ))
             .danger_accept_invalid_certs(options.insecure)
             .default_headers(header_map)
             .build()
